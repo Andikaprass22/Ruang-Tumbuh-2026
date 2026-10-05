@@ -1,0 +1,207 @@
+@import "tailwindcss";
+
+@theme {
+  /*
+   * Identity: forest green. Deep enough to read as print or a community
+   * garden rather than a dashboard, and deliberately not the blue every
+   * event page reaches for.
+   */
+  --color-brand-50: #f1f6f2;
+  --color-brand-100: #dcebe0;
+  --color-brand-200: #b9d6c2;
+  --color-brand-300: #8db99c;
+  --color-brand-400: #5f9574;
+  --color-brand-500: #3f7759;
+  --color-brand-600: #2c5d45;
+  --color-brand-700: #234a3d;
+  --color-brand-800: #1c3a31;
+  --color-brand-900: #152c26;
+
+  /* Accent: clay / terracotta. Emphasis only — badges, rules, small fills. */
+  --color-accent-100: #f8e6dc;
+  --color-accent-200: #eec7b4;
+  --color-accent-500: #b4552f;
+  --color-accent-600: #98411f;
+  --color-accent-700: #7a3418;
+
+  /* Text: warm neutrals, no slate. */
+  --color-ink-900: #1a1a17;
+  --color-ink-700: #42433c;
+  /* Body tone is dark enough to clear WCAG AA on the deep-paper band. */
+  --color-ink-500: #5c5e54;
+
+  /* Surfaces: warm paper instead of #f8fafc. */
+  --color-paper: #f7f3ea;
+  --color-paper-deep: #efe9dc;
+  --color-line: #e2dbcb;
+
+  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+
+  --radius-card: 1rem;
+  --radius-panel: 1.5rem;
+
+  /* Elevation is warm-tinted, never neutral gray. */
+  --shadow-card: 0 1px 2px rgba(26, 26, 23, 0.04),
+    0 18px 40px -26px rgba(28, 58, 49, 0.3);
+  --shadow-lift: 0 4px 10px rgba(26, 26, 23, 0.06),
+    0 30px 60px -30px rgba(28, 58, 49, 0.42);
+  --shadow-panel: 0 2px 6px rgba(26, 26, 23, 0.05),
+    0 48px 90px -46px rgba(28, 58, 49, 0.46);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Motion is opt-in for users who want it. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  @apply bg-paper text-ink-900 antialiased;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  @apply bg-brand-200 text-brand-900;
+}
+
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-brand-600;
+}
+
+/* =====================================================================
+ * Motion
+ *
+ * Every rule below is opt-in: the static version is the default, and a
+ * visitor who asks for reduced motion never receives these rules at all.
+ * Only transform, opacity, and grid-template-rows are animated, so no
+ * animation can trigger layout or reflow.
+ * ===================================================================== */
+
+/* Collapsible regions collapse by grid row, never by animating height. */
+[data-drawer],
+[data-collapse] {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  overflow: hidden;
+}
+
+/*
+ * The direct child must carry no padding or border, or the collapsed row
+ * still measures that box. `overflow: hidden` makes its automatic minimum
+ * size zero in both axes, which is what actually lets the row reach 0.
+ */
+[data-drawer] > *,
+[data-collapse] > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+[data-drawer][data-open="true"],
+[data-collapse][data-open="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Staged entrance used by the hero and by every section body. A slow,
+     decelerating rise — never a bounce. */
+  [data-reveal] {
+    transition:
+      opacity 560ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 560ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  [data-reveal="out"] {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  [data-card] {
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms ease-out,
+      box-shadow 220ms ease-out;
+  }
+
+  [data-drawer],
+  [data-collapse] {
+    transition:
+      grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s linear 300ms;
+  }
+
+  [data-drawer][data-open="true"],
+  [data-collapse][data-open="true"] {
+    transition:
+      grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s linear 0s;
+  }
+
+  /* Opt-in ambient drift. Reserved for one decorative element in the hero, so
+     the page never carries continuous motion in the reading path. */
+  .drift-soft {
+    animation: drift-soft 18s ease-in-out infinite;
+  }
+}
+
+@keyframes drift-soft {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -16px, 0);
+  }
+}
+
+@media (hover: hover) {
+  [data-card]:hover {
+    border-color: var(--color-brand-300);
+    box-shadow: var(--shadow-lift);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-card]:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* =====================================================================
+ * Safe areas
+ *
+ * The document opts into `viewport-fit=cover`, so it owns the inset it
+ * draws under. Each of these resolves to 0px on devices with no notch,
+ * rounded corner, or home indicator, so nothing shifts elsewhere.
+ * ===================================================================== */
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-x {
+  padding-inline: env(safe-area-inset-left, 0px)
+    env(safe-area-inset-right, 0px);
+}
